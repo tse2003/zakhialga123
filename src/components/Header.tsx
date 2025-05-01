@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 import Image from "next/image";
 
 export default function Header() {
@@ -25,7 +27,21 @@ export default function Header() {
 
       {/* Баруун тал - Button */}
       <div className="navbar-end">
-        <a className="btn btn-primary">Холбоо барих</a>
+        <div className="dropdown dropdown-end">
+          <label tabIndex={0} className="btn btn-primary m-1">Холбоо барих</label>
+          <div tabIndex={0} className="dropdown-content z-[1] menu p-4 shadow bg-base-100 rounded-box w-64 space-y-2">
+            <p className="font-semibold">📞 Утас: 7676-7576, 9007-7576, 9176-7576</p>
+            <a
+              href="https://www.facebook.com/ustsewershuulegch/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-blue-600 hover:underline"
+            >
+              <FontAwesomeIcon icon={faFacebook} className="w-4 h-4 text-blue-600" />
+              Facebook хуудас
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
