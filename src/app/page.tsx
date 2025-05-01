@@ -32,6 +32,7 @@ export default function Home() {
   const handleSubmit = async (id: number) => {
     const phoneInput = document.querySelector<HTMLInputElement>(`#phone-${id}`);
     const addressInput = document.querySelector<HTMLInputElement>(`#address-${id}`);
+    const productName = products.find((p) => p.id === id)?.name || 'Бүтээгдэхүүн';
 
     const utas = phoneInput?.value.trim() || '';
     const khayg = addressInput?.value.trim() || '';
@@ -44,21 +45,32 @@ export default function Home() {
     const formData = new FormData();
     formData.append('utas', utas);
     formData.append('khayg', khayg);
+    formData.append('product', productName);
 
     let route = '';
     if (id === 1) route = '/api/winix';
     else if (id === 2) route = '/api/tsorgo';
     else if (id === 3) route = '/api/bide';
 
-    const res = await fetch(route, {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const saveRes = await fetch(route, {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (res.ok) {
+      if (!saveRes.ok) throw new Error('Захиалга хадгалахад алдаа гарлаа.');
+
+      const emailRes = await fetch('/api/email-order', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!emailRes.ok) throw new Error('Имэйл илгээхэд алдаа гарлаа.');
+
       alert('Захиалга амжилттай илгээгдлээ!');
       closeDialog();
-    } else {
+    } catch (error) {
+      console.error(error);
       alert('Алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
@@ -83,7 +95,7 @@ export default function Home() {
             </button>
 
             {openDialogId === product.id && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-30">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                 <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md border relative">
                   <Image
                     src={product.image}
