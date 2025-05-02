@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 
 const products = [
   {
@@ -38,7 +39,7 @@ export default function Home() {
     const khayg = addressInput?.value.trim() || '';
 
     if (!utas || !khayg) {
-      alert('Утас болон хаягаа бүрэн бөглөнө үү.');
+      toast.error('Утас болон хаягаа бүрэн бөглөнө үү.');
       return;
     }
 
@@ -67,11 +68,11 @@ export default function Home() {
 
       if (!emailRes.ok) throw new Error('Имэйл илгээхэд алдаа гарлаа.');
 
-      alert('Захиалга амжилттай илгээгдлээ!');
+      toast.success('Захиалга амжилттай илгээгдлээ!');
       closeDialog();
     } catch (error) {
       console.error(error);
-      alert('Алдаа гарлаа. Дахин оролдоно уу.');
+      toast.error('Алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
 
@@ -95,7 +96,7 @@ export default function Home() {
             </button>
 
             {openDialogId === product.id && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-30">
                 <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md border relative">
                   <Image
                     src={product.image}

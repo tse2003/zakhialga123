@@ -1,31 +1,43 @@
+'use client';
+import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook } from '@fortawesome/free-brands-svg-icons';
-import Image from "next/image";
+import { faBars } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image';
 
 export default function Header() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="navbar bg-base-100 shadow-sm px-6 py-2">
-      {/* Зүүн тал - Logo */}
+      {/* Logo */}
       <div className="navbar-start flex items-center">
         <Image
           src="/logo.png"
           alt="Logo"
-          width={180}
-          height={180}
+          width={120}
+          height={120}
           className="mr-2"
         />
+        {/* Mobile menu button */}
+        <button
+          className="lg:hidden ml-4 text-xl"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          ☰
+        </button>
       </div>
 
-      {/* Төв - Menu */}
+      {/* Center menu for desktop */}
       <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1 font-semibold text-xl">
+        <ul className="menu menu-horizontal px-1 font-semibold text-lg">
           <li><a>Захиалга өгөх</a></li>
           <li><a>WINIX TS-200s</a></li>
           <li><a>Цорготой ус цэвэршүүлэгч</a></li>
         </ul>
       </div>
 
-      {/* Баруун тал - Button */}
+      {/* Contact dropdown */}
       <div className="navbar-end">
         <div className="dropdown dropdown-end">
           <label tabIndex={0} className="btn btn-primary m-1">Холбоо барих</label>
@@ -43,6 +55,17 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-[80px] left-0 w-full bg-base-100 shadow-md p-4 z-50 lg:hidden">
+          <ul className="flex flex-col gap-3 text-lg font-semibold">
+            <li><a onClick={() => setIsMobileMenuOpen(false)}>Захиалга өгөх</a></li>
+            <li><a onClick={() => setIsMobileMenuOpen(false)}>WINIX TS-200s</a></li>
+            <li><a onClick={() => setIsMobileMenuOpen(false)}>Цорготой ус цэвэршүүлэгч</a></li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
