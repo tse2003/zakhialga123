@@ -31,9 +31,11 @@ export default function Header() {
       {/* Center menu for desktop */}
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 font-semibold text-lg">
-          <li><a>Захиалга өгөх</a></li>
-          <li><a>WINIX TS-200s</a></li>
-          <li><a>Цорготой ус цэвэршүүлэгч</a></li>
+          <li><a href='/'>Захиалга өгөх</a></li>
+          <li><a href='/products'>WINIX TS-200s</a></li>
+          <li><a href='/tsorgo'>Цорготой ус цэвэршүүлэгч</a></li>
+          <li><a href='/filter'>Филтер</a></li>
+          <li><a href='/bide'>DS-800 Бидэ</a></li>
         </ul>
       </div>
 

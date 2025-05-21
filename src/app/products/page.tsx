@@ -1,5 +1,6 @@
 'use client'
 import React, { useState } from 'react';
+import { FaGift } from 'react-icons/fa';
 
 const ProductPage = () => {
   // Array of image sources
@@ -97,9 +98,8 @@ const ProductPage = () => {
             {/* Product features */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-6 rounded-lg shadow-lg">
-                <p className="text-lg font-semibold">
-                    - Эко эрчим хүчний хэмнэлийн горим нь цахилгааныг 30% бууруулна <br />
-                    - Хэрэглэхэд хялбар <br />
+                <p className="text-2xl font-bold flex gap-2">
+                <FaGift size={28} /> БЭЛЭГ
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-lg">
