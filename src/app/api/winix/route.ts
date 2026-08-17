@@ -1,38 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MongoClient } from "mongodb";
+import nodemailer from "nodemailer";
 
-// POST: Захиалга хадгалах
+// POST: Захиалгыг Gmail рүү илгээх
 export async function POST(req: NextRequest) {
-  const formData = await req.formData();
-  const data = {
-    utas: formData.get('utas'),
-    khayg: formData.get('khayg'),
-    createdAt: new Date(),
-  };
+  try {
+    const formData = await req.formData();
 
-  const client = await MongoClient.connect(process.env.MONGO!);
-  const db = client.db();
-  const collection = db.collection('winix');
+    const utas = formData.get("utas")?.toString();
+    const khayg = formData.get("khayg")?.toString();
+    const product =
+      formData.get("product")?.toString() || "WINIX ус цэвэршүүлэгч";
 
-  const result = await collection.insertOne(data);
-  client.close();
+    if (!utas || !khayg) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Утас болон хаягаа бүрэн оруулна уу.",
+        },
+        { status: 400 }
+      );
+    }
 
-  return NextResponse.json({ success: true, insertedId: result.insertedId });
-}
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-// GET: Бүх захиалгуудыг авах
-export async function GET() {
-  const client = await MongoClient.connect(process.env.MONGO!);
-  const db = client.db();
-  const collection = db.collection('winix');
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: "naagii0329@gmail.com",
+      subject: `Шинэ WINIX захиалга`,
+      text: `
+ШИНЭ ЗАХИАЛГА
 
-  const list = await collection.find().sort({ createdAt: -1 }).toArray();
-  client.close();
+Бүтээгдэхүүн: ${product}
+Утас: ${utas}
+Хаяг: ${khayg}
 
-  const cleaned = list.map((item) => ({
-    ...item,
-    _id: item._id.toString(),
-  }));
+Огноо: ${new Date().toLocaleString("mn-MN")}
+      `,
+    });
 
-  return NextResponse.json(cleaned);
+    return NextResponse.json({
+      success: true,
+      message: "Захиалга амжилттай илгээгдлээ.",
+    });
+  } catch (error) {
+    console.error("Email error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Захиалга илгээхэд алдаа гарлаа.",
+      },
+      { status: 500 }
+    );
+  }
 }
