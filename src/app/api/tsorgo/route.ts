@@ -1,38 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MongoClient } from "mongodb";
+import nodemailer from "nodemailer";
 
-// POST
+// POST: Цоргоны захиалгыг Gmail рүү илгээх
 export async function POST(req: NextRequest) {
+  try {
     const formData = await req.formData();
-    const data = {
-        utas: formData.get('utas'),
-        khayg: formData.get('khayg'),
-        createdAt: new Date(),
-    };
 
-    const client = await MongoClient.connect(process.env.MONGO!);
-    const db = client.db();
-    const collection = db.collection('tsorgo');
+    const utas = formData.get("utas")?.toString();
+    const khayg = formData.get("khayg")?.toString();
 
-    const result = await collection.insertOne(data);
-    client.close();
+    if (!utas || !khayg) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Утас болон хаягаа бүрэн оруулна уу.",
+        },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ success: true, insertedId: result.insertedId});
-}
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-//GET
-export async function GET() {
-    const client = await MongoClient.connect(process.env.MONGO!);
-    const db = client.db();
-    const collection = db.collection('tsorgo');
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: "naagii0329@gmail.com",
+      subject: "Шинэ ЦОРГО захиалга",
+      text: `
+ШИНЭ ЦОРГО ЗАХИАЛГА
 
-    const list = await collection.find().sort({ createdAt: -1 }).toArray();
-    client.close();
-    
-    const cleaned = list.map((item) => ({
-        ...item,
-        _id: item._id.toString(),
-    }));
+Утас: ${utas}
+Хаяг: ${khayg}
 
-    return NextResponse.json(cleaned);
+Огноо: ${new Date().toLocaleString("mn-MN")}
+      `,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Захиалга амжилттай илгээгдлээ.",
+    });
+  } catch (error) {
+    console.error("Email error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Захиалга илгээхэд алдаа гарлаа.",
+      },
+      { status: 500 }
+    );
+  }
 }
