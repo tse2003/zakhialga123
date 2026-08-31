@@ -53,8 +53,8 @@ const productModels: ProductModel[] = [
     id: 'ts-200',
     name: 'WINIX TS-200',
     type: 'Өндөр загвар',
-    oldPrice: '980,000₮',
-    price: '750,000₮',
+    oldPrice: '1,350,000₮',
+    price: '1,190,000₮',
     description:
       'Шалан дээр байрлуулах зориулалттай, зай бага эзлэх өндөр загвар.',
     images: ['/winixts200.jpg'],

@@ -61,7 +61,6 @@ const accentStyles = {
   rose: {
     badge: 'bg-rose-500',
     light: 'bg-rose-50',
-    border: 'border-rose-200',
     text: 'text-rose-600',
     button: 'from-rose-500 to-pink-600',
     shadow: 'shadow-rose-200/60',
@@ -69,7 +68,6 @@ const accentStyles = {
   green: {
     badge: 'bg-emerald-500',
     light: 'bg-emerald-50',
-    border: 'border-emerald-200',
     text: 'text-emerald-600',
     button: 'from-emerald-500 to-green-600',
     shadow: 'shadow-emerald-200/60',
@@ -77,7 +75,6 @@ const accentStyles = {
   blue: {
     badge: 'bg-blue-600',
     light: 'bg-blue-50',
-    border: 'border-blue-200',
     text: 'text-blue-700',
     button: 'from-blue-600 to-indigo-700',
     shadow: 'shadow-blue-200/60',
@@ -85,7 +82,6 @@ const accentStyles = {
   orange: {
     badge: 'bg-orange-500',
     light: 'bg-orange-50',
-    border: 'border-orange-200',
     text: 'text-orange-600',
     button: 'from-orange-500 to-amber-600',
     shadow: 'shadow-orange-200/60',
@@ -100,28 +96,6 @@ export default function FilterPage() {
   const [khayg, setKhayg] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    document.body.style.overflow = selectedFilter ? 'hidden' : '';
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [selectedFilter]);
-
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !loading) {
-        closeOrder();
-      }
-    };
-
-    window.addEventListener('keydown', handleEscape);
-
-    return () => {
-      window.removeEventListener('keydown', handleEscape);
-    };
-  }, [loading]);
-
   const openOrder = (filter: FilterType) => {
     setSelectedFilter(filter);
     setUtas('');
@@ -135,6 +109,30 @@ export default function FilterPage() {
     setUtas('');
     setKhayg('');
   };
+
+  useEffect(() => {
+    document.body.style.overflow = selectedFilter ? 'hidden' : '';
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedFilter]);
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !loading) {
+        setSelectedFilter(null);
+        setUtas('');
+        setKhayg('');
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [loading]);
 
   const handleOrder = async (
     event: FormEvent<HTMLFormElement>
@@ -215,7 +213,7 @@ export default function FilterPage() {
         }}
       />
 
-      {/* Background decoration */}
+      {/* Background */}
       <div className="pointer-events-none absolute -left-32 top-20 h-80 w-80 rounded-full bg-cyan-200/30 blur-3xl" />
       <div className="pointer-events-none absolute -right-40 bottom-20 h-96 w-96 rounded-full bg-blue-200/30 blur-3xl" />
 
@@ -237,7 +235,7 @@ export default function FilterPage() {
         </header>
 
         {/* Filter cards */}
-        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 items-stretch gap-7 sm:grid-cols-2 lg:grid-cols-4">
           {filters.map((filter) => {
             const colors = accentStyles[filter.accent];
 
@@ -248,7 +246,7 @@ export default function FilterPage() {
               >
                 {/* Image */}
                 <div
-                  className={`relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-[22px] ${colors.light}`}
+                  className={`relative flex aspect-[4/5] w-full shrink-0 items-center justify-center overflow-hidden rounded-[22px] ${colors.light}`}
                 >
                   <span
                     className={`absolute left-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full ${colors.badge} text-sm font-black text-white shadow-lg`}
@@ -281,50 +279,59 @@ export default function FilterPage() {
                     {filter.description}
                   </p>
 
-                  <div className="mt-5 grid grid-cols-2 gap-2">
-                    <div className="rounded-xl bg-slate-50 p-3">
-                      <p className="text-[11px] font-bold text-slate-500">
-                        Солих хугацаа
-                      </p>
+                  {/* Доод хэсгийг картын доор байрлуулна */}
+                  <div className="mt-auto pt-5">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-xl bg-slate-50 p-3">
+                        <p className="text-[11px] font-bold text-slate-500">
+                          Солих хугацаа
+                        </p>
 
-                      <p className={`mt-1 font-black ${colors.text}`}>
-                        {filter.duration}
-                      </p>
+                        <p
+                          className={`mt-1 font-black ${colors.text}`}
+                        >
+                          {filter.duration}
+                        </p>
+                      </div>
+
+                      <div
+                        className={`rounded-xl ${colors.light} p-3`}
+                      >
+                        <p className="text-[11px] font-bold text-slate-500">
+                          Үнэ
+                        </p>
+
+                        <p
+                          className={`mt-1 font-black ${colors.text}`}
+                        >
+                          {filter.price}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className={`rounded-xl ${colors.light} p-3`}>
-                      <p className="text-[11px] font-bold text-slate-500">
-                        Үнэ
-                      </p>
-
-                      <p className={`mt-1 font-black ${colors.text}`}>
-                        {filter.price}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => openOrder(filter)}
-                    className={`mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${colors.button} px-5 py-3.5 font-bold text-white shadow-lg ${colors.shadow} transition hover:shadow-xl active:scale-[0.98]`}
-                  >
-                    Захиалах
-
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="h-5 w-5"
-                      aria-hidden="true"
+                    <button
+                      type="button"
+                      onClick={() => openOrder(filter)}
+                      className={`mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${colors.button} px-5 py-3.5 font-bold text-white shadow-lg ${colors.shadow} transition hover:shadow-xl active:scale-[0.98]`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 12h14m-6-6 6 6-6 6"
-                      />
-                    </svg>
-                  </button>
+                      Захиалах
+
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 12h14m-6-6 6 6-6 6"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </article>
             );
@@ -349,7 +356,7 @@ export default function FilterPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="order-title"
-            className="relative my-6 w-full max-w-lg overflow-hidden rounded-[28px] bg-white shadow-[0_30px_100px_rgba(0,0,0,0.35)]"
+            className="relative my-6 max-h-[95vh] w-full max-w-lg overflow-y-auto rounded-[28px] bg-white shadow-[0_30px_100px_rgba(0,0,0,0.35)]"
             onClick={(event) => event.stopPropagation()}
           >
             <button
@@ -362,7 +369,7 @@ export default function FilterPage() {
               ×
             </button>
 
-            {/* Modal product */}
+            {/* Product image */}
             <div
               className={`relative flex h-[280px] items-center justify-center ${
                 accentStyles[selectedFilter.accent].light

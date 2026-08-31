@@ -32,8 +32,8 @@ const products: Product[] = [
       {
         id: 'winix-ts200s',
         name: 'WINIX TS-200s',
-        oldPrice: '₮1.250.000',
-        price: '₮1.080.000',
+        oldPrice: '1.250.000₮',
+        price: '1.080.000₮',
       },
     ],
   },
@@ -46,8 +46,8 @@ const products: Product[] = [
       {
         id: 'basic-package',
         name: 'Үндсэн багц',
-        oldPrice: '₮230.000',
-        price: '₮125.000',
+        oldPrice: '230.000₮',
+        price: '125.000₮',
         description: 'AQUABLUE 4 шатлалт ус цэвэршүүлэгч',
         items: [
           '4 ширхэг усны шүүлтүүр',
@@ -60,7 +60,7 @@ const products: Product[] = [
         id: 'annual-package',
         name: 'Бүтэн жилийн багц',
         oldPrice: '₮316.500',
-        price: '₮210.000',
+        price: '210.000₮',
         description: 'Нэг жилийн хэрэглээнд зориулсан иж бүрэн багц',
         recommended: true,
         items: [
@@ -82,8 +82,8 @@ const products: Product[] = [
       {
         id: 'winix-ts200',
         name: 'WINIX TS-200',
-        oldPrice: '₮980.000',
-        price: '₮750.000',
+        oldPrice: '1.350.000₮',
+        price: '₮1.190.000',
       },
     ],
   },
