@@ -14,7 +14,7 @@ const filters = [
     description:
       'Усанд агуулагдах зэв, элс, шороо, тунадас болон бусад механик бохирдлыг шүүнэ. Дараагийн шатны шүүлтүүрүүдийг хамгаалж, ашиглалтын хугацааг уртасгана.',
     duration: '3 сар',
-    price: '22,000₮',
+    price: '25,000₮',
     accent: 'rose',
   },
   {
@@ -22,36 +22,36 @@ const filters = [
     stage: '02',
     name: 'НҮҮРСЭН ШҮҮР',
     englishName: 'PRE CARBON FILTER',
-    image: '/filter/2.png',
+    image: '/filter/4.png',
     description:
       'Усан дахь үлдэгдэл хлор, органик нэгдэл, эвгүй үнэр болон амтыг бууруулж, дараагийн шатны нарийн шүүлтүүрийн ажиллагааг хамгаална.',
     duration: '6 сар',
-    price: '27,000₮',
-    accent: 'blue',
+    price: '30,000₮',
+    accent: 'green',
   },
   {
     id: 3,
     stage: '03',
-    name: 'НАНО МЕМБРАН ШҮҮР',
+    name: 'UF МЕМБРАН ШҮҮР',
     englishName: 'NANO MEMBRANE FILTER',
-    image: '/filter/3.png',
+    image: '/filter/2.png',
     description:
       'Усанд агуулагдах нян, бичил биет болон нарийн ширхэгтэй бохирдлыг шүүн, хүний биед хэрэгтэй байгалийн эрдэс бодисыг хадгална.',
     duration: '9 сар',
-    price: '42,000₮',
-    accent: 'orange',
+    price: '45,000₮',
+    accent: 'blue',
   },
   {
     id: 4,
     stage: '04',
     name: 'ИДЭВХЖҮҮЛСЭН НҮҮРСЭН ШҮҮР',
     englishName: 'POST CARBON FILTER',
-    image: '/filter/4.png',
+    image: '/filter/3.png',
     description:
       'Цэвэршүүлэлтийн сүүлийн шатанд үлдэгдэл хлор, эвгүй үнэр болон амтыг бууруулж, усны амт чанарыг сайжруулна.',
     duration: '12 сар',
-    price: '32,000₮',
-    accent: 'green',
+    price: '35,000₮',
+    accent: 'orange',
   },
 ] as const;
 
