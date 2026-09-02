@@ -15,14 +15,21 @@ type PriceOption = {
 };
 
 type Product = {
-  id: number;
+  _id?: string;
+  id?: number;
   name: string;
   image: string;
   badge: string;
   options: PriceOption[];
 };
 
-const products: Product[] = [
+type SiteSettings = {
+  homeBadge: string;
+  homeTitle: string;
+  homeSubtitle: string;
+};
+
+const fallbackProducts: Product[] = [
   {
     id: 1,
     name: 'WINIX TS-200s',
@@ -90,20 +97,43 @@ const products: Product[] = [
 ];
 
 export default function Home() {
-  const [openDialogId, setOpenDialogId] = useState<number | null>(null);
+  const [products, setProducts] = useState<Product[]>(fallbackProducts);
+  const [settings, setSettings] = useState<SiteSettings>({
+    homeBadge: 'Цэвэр ус • Эрүүл хэрэглээ',
+    homeTitle: 'ЗАХИАЛГА ӨГӨХ',
+    homeSubtitle: 'Өөрт тохирох бүтээгдэхүүн болон үнийн багцаа сонгоорой.',
+  });
+  const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState('');
   const [utas, setUtas] = useState('');
   const [khayg, setKhayg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const productKey = (product: Product) => product._id ?? String(product.id);
   const selectedProduct = products.find(
-    (product) => product.id === openDialogId
+    (product) => productKey(product) === openDialogId
   );
 
   const selectedOption =
     selectedProduct?.options.find(
       (option) => option.id === selectedOptionId
     ) ?? selectedProduct?.options[0];
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/products').then((response) => response.json()),
+      fetch('/api/settings').then((response) => response.json()),
+    ])
+      .then(([productData, settingsData]) => {
+        if (productData.success && productData.products?.length) {
+          setProducts(productData.products);
+        }
+        if (settingsData.success && settingsData.settings) {
+          setSettings(settingsData.settings);
+        }
+      })
+      .catch((error) => console.error('Database data error:', error));
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = openDialogId ? 'hidden' : '';
@@ -128,7 +158,7 @@ export default function Home() {
   }, [isSubmitting]);
 
   const openDialog = (product: Product) => {
-    setOpenDialogId(product.id);
+    setOpenDialogId(productKey(product));
 
     const defaultOption =
       product.options.find((option) => option.recommended) ??
@@ -170,20 +200,19 @@ export default function Home() {
 
     const orderName = `${selectedProduct.name} - ${selectedOption.name} (${selectedOption.price})`;
 
-    const formData = new FormData();
-
-    formData.append('utas', utas.trim());
-    formData.append('khayg', khayg.trim());
-    formData.append('product', orderName);
-    formData.append('package', selectedOption.name);
-    formData.append('price', selectedOption.price);
-
     try {
       setIsSubmitting(true);
 
-      const response = await fetch('/api/email-order', {
+      const response = await fetch('/api/orders', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productName: orderName,
+          optionName: selectedOption.name,
+          price: selectedOption.price,
+          phone: utas.trim(),
+          address: khayg.trim(),
+        }),
       });
 
       const result = await response.json();
@@ -235,15 +264,15 @@ export default function Home() {
         {/* Header */}
         <div className="mx-auto mb-10 max-w-2xl text-center">
           <span className="mb-4 inline-flex rounded-full border border-sky-200 bg-white/80 px-4 py-2 text-sm font-bold text-sky-700 shadow-sm">
-            Цэвэр ус • Эрүүл хэрэглээ
+            {settings.homeBadge}
           </span>
 
           <h1 className="bg-gradient-to-r from-sky-700 via-blue-600 to-cyan-500 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-5xl lg:text-6xl">
-            ЗАХИАЛГА ӨГӨХ
+            {settings.homeTitle}
           </h1>
 
           <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
-            Өөрт тохирох бүтээгдэхүүн болон үнийн багцаа сонгоорой.
+            {settings.homeSubtitle}
           </p>
         </div>
 
@@ -255,7 +284,7 @@ export default function Home() {
 
             return (
               <article
-                key={product.id}
+                key={productKey(product)}
                 className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-white/80 bg-white/90 p-4 shadow-[0_15px_50px_rgba(14,116,144,0.10)] backdrop-blur transition duration-300 hover:-translate-y-2 hover:shadow-[0_25px_60px_rgba(14,116,144,0.20)]"
               >
                 <span className="absolute left-7 top-7 z-10 rounded-full bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-2 text-xs font-extrabold tracking-wide text-white shadow-lg shadow-sky-200">
@@ -271,7 +300,7 @@ export default function Home() {
                     alt={product.name}
                     width={650}
                     height={650}
-                    priority={product.id === 1}
+                    priority={productKey(product) === productKey(products[0])}
                     className="relative z-[1] h-full w-full object-contain p-8 transition duration-500 group-hover:scale-105"
                   />
                 </div>

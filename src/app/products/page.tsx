@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -27,7 +27,7 @@ type ProductModel = {
   images: string[];
 };
 
-const productModels: ProductModel[] = [
+const fallbackProductModels: ProductModel[] = [
   {
     id: 'ts-200s',
     name: 'WINIX TS-200S',
@@ -99,6 +99,7 @@ const highlights = [
 ];
 
 export default function ProductPage() {
+  const [productModels, setProductModels] = useState<ProductModel[]>(fallbackProductModels);
   const [selectedModelId, setSelectedModelId] =
     useState<string>('ts-200s');
 
@@ -107,6 +108,39 @@ export default function ProductPage() {
   const selectedModel =
     productModels.find((model) => model.id === selectedModelId) ??
     productModels[0];
+
+  useEffect(() => {
+    fetch('/api/products?category=winix')
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data.success || !data.products?.length) return;
+        const models: ProductModel[] = data.products.map(
+          (product: {
+            slug: string;
+            name: string;
+            type: string;
+            image: string;
+            gallery: string[];
+            description: string;
+            options: Array<{ oldPrice?: string; price: string; recommended?: boolean }>;
+          }) => ({
+            id: product.slug,
+            name: product.name,
+            type: product.type,
+            oldPrice: product.options[0]?.oldPrice ?? '',
+            price: product.options[0]?.price ?? '',
+            description: product.description,
+            recommended: product.options[0]?.recommended,
+            images: product.gallery?.length ? product.gallery : [product.image],
+          })
+        );
+        setProductModels(models);
+        const preferred = models.find((model) => model.recommended) ?? models[0];
+        setSelectedModelId(preferred.id);
+        setMainImageIndex(0);
+      })
+      .catch((error) => console.error('WINIX data error:', error));
+  }, []);
 
   const images = selectedModel.images;
 

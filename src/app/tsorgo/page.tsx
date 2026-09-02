@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -24,9 +24,10 @@ type PackageOption = {
   badge: string;
   description: string;
   items: string[];
+  recommended?: boolean;
 };
 
-const packageOptions: PackageOption[] = [
+const fallbackPackageOptions: PackageOption[] = [
   {
     id: 'basic',
     name: 'AQUABLUE үндсэн багц',
@@ -43,6 +44,7 @@ const packageOptions: PackageOption[] = [
       'Суурилуулах холбох хэрэгсэл',
       'Хүргэлт, суурилуулалт үнэгүй',
     ],
+    recommended: false,
   },
   {
     id: 'annual',
@@ -60,6 +62,7 @@ const packageOptions: PackageOption[] = [
       'Суурилуулах холбох хэрэгсэл',
       'Хүргэлт, суурилуулалт үнэгүй',
     ],
+    recommended: true,
   },
 ];
 
@@ -91,13 +94,34 @@ const benefits = [
 ];
 
 export default function TsorgoPage() {
+  const [packageOptions, setPackageOptions] = useState<PackageOption[]>(fallbackPackageOptions);
   const [selectedPackageId, setSelectedPackageId] =
     useState<string>('annual');
 
   const selectedPackage =
     packageOptions.find(
       (packageItem) => packageItem.id === selectedPackageId
-    ) ?? packageOptions[1];
+    ) ?? packageOptions.find((item) => item.recommended) ?? packageOptions[0];
+
+  useEffect(() => {
+    fetch('/api/products?category=faucet')
+      .then((response) => response.json())
+      .then((data) => {
+        const product = data.products?.[0];
+        if (!data.success || !product?.options?.length) return;
+        const options: PackageOption[] = product.options.map(
+          (option: PackageOption) => ({
+            ...option,
+            image: option.image || product.image,
+            badge: option.badge || product.badge,
+          })
+        );
+        setPackageOptions(options);
+        const preferred = options.find((item) => item.recommended) ?? options[0];
+        setSelectedPackageId(preferred.id);
+      })
+      .catch((error) => console.error('Faucet data error:', error));
+  }, []);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-white to-cyan-50 py-10 sm:py-14 lg:py-16">
@@ -125,7 +149,7 @@ export default function TsorgoPage() {
             <div className="relative overflow-hidden rounded-[32px] border border-white bg-white/90 p-4 shadow-[0_25px_70px_rgba(14,116,144,0.15)] backdrop-blur sm:p-6">
               <span
                 className={`absolute left-7 top-7 z-20 rounded-full px-4 py-2 text-xs font-black tracking-wide text-white shadow-lg ${
-                  selectedPackage.id === 'annual'
+                  selectedPackage.recommended
                     ? 'bg-gradient-to-r from-amber-400 to-orange-500 shadow-orange-200'
                     : 'bg-gradient-to-r from-rose-500 to-red-500 shadow-rose-200'
                 }`}
@@ -214,7 +238,7 @@ export default function TsorgoPage() {
                           : 'border-slate-200 bg-white hover:border-sky-300 hover:shadow-lg'
                       }`}
                     >
-                      {packageItem.id === 'annual' && (
+                      {packageItem.recommended && (
                         <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1.5 text-[9px] font-black text-white shadow">
                           ЭРЭЛТТЭЙ
                         </span>
@@ -298,7 +322,7 @@ export default function TsorgoPage() {
                 ))}
               </ul>
 
-              {selectedPackage.id === 'annual' && (
+              {selectedPackage.recommended && (
                 <div className="mt-5 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 p-4">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-orange-200">
                     <FaGift size={19} />
