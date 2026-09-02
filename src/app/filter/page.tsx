@@ -4,7 +4,20 @@ import Image from 'next/image';
 import { FormEvent, useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
-const filters = [
+type FilterType = {
+  _id?: string;
+  id?: number;
+  stage: string;
+  name: string;
+  englishName: string;
+  image: string;
+  description: string;
+  duration: string;
+  price: string;
+  accent: 'rose' | 'green' | 'blue' | 'orange';
+};
+
+const fallbackFilters: FilterType[] = [
   {
     id: 1,
     stage: '01',
@@ -53,9 +66,7 @@ const filters = [
     price: '35,000₮',
     accent: 'orange',
   },
-] as const;
-
-type FilterType = (typeof filters)[number];
+];
 
 const accentStyles = {
   rose: {
@@ -89,12 +100,22 @@ const accentStyles = {
 };
 
 export default function FilterPage() {
+  const [filters, setFilters] = useState<FilterType[]>(fallbackFilters);
   const [selectedFilter, setSelectedFilter] =
     useState<FilterType | null>(null);
 
   const [utas, setUtas] = useState('');
   const [khayg, setKhayg] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/filters')
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success && data.filters?.length) setFilters(data.filters);
+      })
+      .catch((error) => console.error('Filter data error:', error));
+  }, []);
 
   const openOrder = (filter: FilterType) => {
     setSelectedFilter(filter);
@@ -157,18 +178,16 @@ export default function FilterPage() {
     setLoading(true);
 
     try {
-      const formData = new FormData();
-
-      formData.append('utas', cleanUtas);
-      formData.append('khayg', cleanKhayg);
-      formData.append(
-        'product',
-        `№${selectedFilter.id} ${selectedFilter.name} — ${selectedFilter.price}`
-      );
-
-      const response = await fetch('/api/email', {
+      const response = await fetch('/api/orders', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productName: `№${selectedFilter.stage} ${selectedFilter.name}`,
+          optionName: selectedFilter.englishName,
+          price: selectedFilter.price,
+          phone: cleanUtas,
+          address: cleanKhayg,
+        }),
       });
 
       const result = await response.json();
@@ -241,7 +260,7 @@ export default function FilterPage() {
 
             return (
               <article
-                key={filter.id}
+                key={filter._id ?? filter.stage}
                 className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-white/80 bg-white/90 p-3 shadow-[0_15px_45px_rgba(14,116,144,0.10)] backdrop-blur transition duration-300 hover:-translate-y-2 hover:shadow-[0_25px_60px_rgba(14,116,144,0.18)]"
               >
                 {/* Image */}
@@ -272,7 +291,7 @@ export default function FilterPage() {
                   </p>
 
                   <h2 className="mt-2 min-h-[56px] text-lg font-black leading-7 text-slate-900">
-                    №{filter.id} {filter.name}
+                    №{filter.stage} {filter.name}
                   </h2>
 
                   <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -398,7 +417,7 @@ export default function FilterPage() {
                   id="order-title"
                   className="mt-2 text-2xl font-black text-slate-900"
                 >
-                  №{selectedFilter.id} {selectedFilter.name}
+                  №{selectedFilter.stage} {selectedFilter.name}
                 </h2>
 
                 <div className="mt-4 flex items-center justify-center gap-3">

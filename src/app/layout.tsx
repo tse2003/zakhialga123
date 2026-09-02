@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   title: "ТӨГС ЦЭНГЭГ УС ХХК",
-  description: "Gmail илгээдэг modern form",
+  description: "AQUABLUE болон WINIX ус цэвэршүүлэгчийн захиалгын вебсайт",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -40,10 +40,25 @@ export default function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    logo: '/logo2.png',
+    phoneNumbers: ['7676-7576', '9007-7576', '9176-7576'],
+    facebookUrl: 'https://www.facebook.com/ustsewershuulegch/',
+  });
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsContactOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (pathname.startsWith('/admin')) return;
+    fetch('/api/settings')
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success && data.settings) setSettings(data.settings);
+      })
+      .catch((error) => console.error('Header settings error:', error));
   }, [pathname]);
 
   useEffect(() => {
@@ -62,6 +77,8 @@ export default function Header() {
     return pathname.startsWith(href);
   };
 
+  if (pathname.startsWith('/admin')) return null;
+
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-sky-100/80 bg-white/90 shadow-[0_4px_30px_rgba(14,116,144,0.08)] backdrop-blur-xl">
@@ -73,7 +90,7 @@ export default function Header() {
             aria-label="Нүүр хуудас"
           >
             <Image
-              src="/logo2.png"
+              src={settings.logo}
               alt="AQUABLUE лого"
               width={125}
               height={80}
@@ -148,11 +165,7 @@ export default function Header() {
                       </p>
 
                       <div className="mt-3 space-y-2">
-                        {[
-                          '7676-7576',
-                          '9007-7576',
-                          '9176-7576',
-                        ].map((phone) => (
+                        {settings.phoneNumbers.map((phone) => (
                           <a
                             key={phone}
                             href={`tel:${phone.replace('-', '')}`}
@@ -172,7 +185,7 @@ export default function Header() {
                     </div>
 
                     <a
-                      href="https://www.facebook.com/ustsewershuulegch/"
+                      href={settings.facebookUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-3 flex items-center justify-center gap-2 rounded-2xl bg-[#1877F2] px-4 py-3.5 font-bold text-white transition hover:bg-[#0f68d8]"
@@ -191,7 +204,7 @@ export default function Header() {
 
             {/* Mobile contact button */}
             <a
-              href="tel:76767576"
+              href={`tel:${(settings.phoneNumbers[0] ?? '').replace(/\D/g, '')}`}
               aria-label="Утасдах"
               className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-700 transition hover:bg-sky-100 sm:hidden"
             >
@@ -276,11 +289,7 @@ export default function Header() {
             </p>
 
             <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-3">
-              {[
-                '7676-7576',
-                '9007-7576',
-                '9176-7576',
-              ].map((phone) => (
+              {settings.phoneNumbers.map((phone) => (
                 <a
                   key={phone}
                   href={`tel:${phone.replace('-', '')}`}
@@ -292,7 +301,7 @@ export default function Header() {
             </div>
 
             <a
-              href="https://www.facebook.com/ustsewershuulegch/"
+              href={settings.facebookUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-[#1877F2] px-4 py-3.5 font-bold text-white"
