@@ -653,7 +653,7 @@ export default function AdminPage() {
       id: 'orders' as Tab,
       name: 'Захиалга',
       icon: FaClipboardList,
-      count: newOrderCount,
+      count: orders.length,
     },
     {
       id: 'settings' as Tab,
