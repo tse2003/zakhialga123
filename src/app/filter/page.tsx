@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
 type FilterType = {
@@ -15,6 +15,17 @@ type FilterType = {
   duration: string;
   price: string;
   accent: 'rose' | 'green' | 'blue' | 'orange';
+};
+
+type OrderReceipt = {
+  orderCode: string;
+  productName: string;
+  optionName: string;
+  unitPrice: string;
+  quantity: number;
+  totalPrice: string;
+  phone: string;
+  address: string;
 };
 
 const fallbackFilters: FilterType[] = [
@@ -108,6 +119,9 @@ export default function FilterPage() {
   const [utas, setUtas] = useState('');
   const [khayg, setKhayg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [completedOrder, setCompletedOrder] =
+    useState<OrderReceipt | null>(null);
+  const requestKeyRef = useRef('');
 
   const getPriceNumber = (price: string) =>
     Number(price.replace(/[^0-9]/g, '')) || 0;
@@ -129,6 +143,7 @@ export default function FilterPage() {
     setQuantity(1);
     setUtas('');
     setKhayg('');
+    requestKeyRef.current = '';
   };
 
   const closeOrder = () => {
@@ -138,23 +153,30 @@ export default function FilterPage() {
     setQuantity(1);
     setUtas('');
     setKhayg('');
+    requestKeyRef.current = '';
   };
 
   useEffect(() => {
-    document.body.style.overflow = selectedFilter ? 'hidden' : '';
+    document.body.style.overflow =
+      selectedFilter || completedOrder ? 'hidden' : '';
 
     return () => {
       document.body.style.overflow = '';
     };
-  }, [selectedFilter]);
+  }, [completedOrder, selectedFilter]);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !loading) {
-        setSelectedFilter(null);
-        setQuantity(1);
-        setUtas('');
-        setKhayg('');
+        if (completedOrder) {
+          setCompletedOrder(null);
+        } else {
+          setSelectedFilter(null);
+          setQuantity(1);
+          setUtas('');
+          setKhayg('');
+          requestKeyRef.current = '';
+        }
       }
     };
 
@@ -163,7 +185,7 @@ export default function FilterPage() {
     return () => {
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [loading]);
+  }, [completedOrder, loading]);
 
   const handleOrder = async (
     event: FormEvent<HTMLFormElement>
@@ -172,7 +194,11 @@ export default function FilterPage() {
 
     if (!selectedFilter) return;
 
-    const cleanUtas = utas.trim();
+    const phoneDigits = utas.replace(/\D/g, '');
+    const cleanUtas =
+      phoneDigits.length === 11 && phoneDigits.startsWith('976')
+        ? phoneDigits.slice(3)
+        : phoneDigits;
     const cleanKhayg = khayg.trim();
     const unitPrice = getPriceNumber(selectedFilter.price);
     const totalPrice = formatPrice(unitPrice * quantity);
@@ -182,7 +208,7 @@ export default function FilterPage() {
       return;
     }
 
-    if (!/^[0-9+\-\s]{8,15}$/.test(cleanUtas)) {
+    if (!/^\d{8}$/.test(cleanUtas)) {
       toast.error('Утасны дугаараа зөв оруулна уу.');
       return;
     }
@@ -190,9 +216,19 @@ export default function FilterPage() {
     setLoading(true);
 
     try {
+      if (!requestKeyRef.current) {
+        requestKeyRef.current =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+
       const response = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-idempotency-key': requestKeyRef.current,
+        },
         body: JSON.stringify({
           productName: `№${selectedFilter.stage} ${selectedFilter.name} × ${quantity} ширхэг`,
           optionName: selectedFilter.englishName,
@@ -213,6 +249,26 @@ export default function FilterPage() {
         );
       }
 
+      const orderId = String(
+        result.order?.orderId ?? result.orderId ?? ''
+      );
+      const fallbackCode = orderId
+        ? `AQ-${orderId.slice(-8).toUpperCase()}`
+        : `AQ-${Date.now().toString().slice(-8)}`;
+
+      setCompletedOrder({
+        orderCode: String(
+          result.order?.orderCode ?? result.orderCode ?? fallbackCode
+        ),
+        productName: `№${selectedFilter.stage} ${selectedFilter.name}`,
+        optionName: selectedFilter.englishName,
+        unitPrice: selectedFilter.price,
+        quantity,
+        totalPrice,
+        phone: cleanUtas,
+        address: cleanKhayg,
+      });
+
       toast.success(
         result.message || 'Таны захиалга амжилттай бүртгэгдлээ.'
       );
@@ -221,6 +277,7 @@ export default function FilterPage() {
       setQuantity(1);
       setUtas('');
       setKhayg('');
+      requestKeyRef.current = '';
     } catch (error) {
       console.error('Захиалгын алдаа:', error);
 
@@ -232,6 +289,52 @@ export default function FilterPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const receiptText = completedOrder
+    ? [
+        'ТӨГС ЦЭНГЭГ УС — ЗАХИАЛГЫН БАТАЛГАА',
+        `Захиалгын код: ${completedOrder.orderCode}`,
+        `Бүтээгдэхүүн: ${completedOrder.productName}`,
+        `Төрөл: ${completedOrder.optionName}`,
+        `Нэгж үнэ: ${completedOrder.unitPrice}`,
+        `Тоо ширхэг: ${completedOrder.quantity}`,
+        `Нийт үнэ: ${completedOrder.totalPrice}`,
+        `Утас: ${completedOrder.phone}`,
+        `Хаяг: ${completedOrder.address}`,
+        'Төлбөр: Хүргэлтийн үед',
+        'Манай ажилтан утсаар холбогдож хүргэлтийн цагийг баталгаажуулна.',
+        'Лавлах утас: 7676-7576',
+      ].join('\n')
+    : '';
+
+  const copyReceipt = async () => {
+    try {
+      await navigator.clipboard.writeText(receiptText);
+      toast.success('Захиалгын мэдээллийг хууллаа.');
+    } catch {
+      toast.error('Хуулж чадсангүй. Screenshot хийж хадгална уу.');
+    }
+  };
+
+  const shareReceipt = async () => {
+    if (!completedOrder) return;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Захиалга ${completedOrder.orderCode}`,
+          text: receiptText,
+        });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+      }
+    }
+
+    await copyReceipt();
   };
 
   return (
@@ -571,6 +674,135 @@ export default function FilterPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Free order confirmation */}
+      {completedOrder && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-slate-950/70 p-4 backdrop-blur-md"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="filter-order-success-title"
+        >
+          <div className="my-6 w-full max-w-lg overflow-hidden rounded-[30px] bg-white shadow-[0_30px_100px_rgba(0,0,0,0.4)]">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-8 text-center text-white">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl font-black text-emerald-600 shadow-lg">
+                ✓
+              </div>
+
+              <h2
+                id="filter-order-success-title"
+                className="mt-4 text-2xl font-black sm:text-3xl"
+              >
+                Захиалга амжилттай
+              </h2>
+
+              <p className="mt-2 text-sm font-semibold text-emerald-50">
+                Таны шүүлтүүрийн захиалга системд бүртгэгдлээ.
+              </p>
+            </div>
+
+            <div className="p-6 sm:p-8">
+              <div className="rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 p-5 text-center">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-600">
+                  Захиалгын код
+                </p>
+
+                <p className="mt-2 break-all text-2xl font-black tracking-wide text-sky-800">
+                  {completedOrder.orderCode}
+                </p>
+
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Лавлахдаа энэ кодыг хэлээрэй.
+                </p>
+              </div>
+
+              <div className="mt-5 space-y-3 rounded-2xl bg-slate-50 p-5 text-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Шүүлтүүр</span>
+                  <strong className="max-w-[65%] text-right text-slate-900">
+                    {completedOrder.productName}
+                  </strong>
+                </div>
+
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Нэгж үнэ</span>
+                  <strong className="text-right text-slate-900">
+                    {completedOrder.unitPrice}
+                  </strong>
+                </div>
+
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Тоо ширхэг</span>
+                  <strong className="text-right text-slate-900">
+                    {completedOrder.quantity}
+                  </strong>
+                </div>
+
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Нийт үнэ</span>
+                  <strong className="text-right text-xl text-sky-700">
+                    {completedOrder.totalPrice}
+                  </strong>
+                </div>
+
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Утас</span>
+                  <strong className="text-right text-slate-900">
+                    {completedOrder.phone}
+                  </strong>
+                </div>
+
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Хаяг</span>
+                  <strong className="max-w-[65%] text-right text-slate-900">
+                    {completedOrder.address}
+                  </strong>
+                </div>
+
+                <div className="h-px bg-slate-200" />
+
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Төлбөр</span>
+                  <strong className="text-right text-emerald-700">
+                    Хүргэлтийн үед
+                  </strong>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                Манай ажилтан таны утас руу холбогдож хүргэлтийн цагийг
+                баталгаажуулна. Урьдчилгаа төлбөр төлөх шаардлагагүй.
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={copyReceipt}
+                  className="rounded-2xl border-2 border-sky-200 bg-sky-50 px-5 py-4 font-black text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
+                >
+                  Мэдээлэл хуулах
+                </button>
+
+                <button
+                  type="button"
+                  onClick={shareReceipt}
+                  className="rounded-2xl bg-gradient-to-r from-sky-600 to-blue-600 px-5 py-4 font-black text-white shadow-lg shadow-sky-200 transition hover:from-sky-700 hover:to-blue-700"
+                >
+                  Хуваалцах / хадгалах
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCompletedOrder(null)}
+                className="mt-3 w-full rounded-2xl px-5 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+              >
+                Хаах
+              </button>
             </div>
           </div>
         </div>

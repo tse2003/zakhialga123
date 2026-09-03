@@ -75,6 +75,7 @@ type OrderStatus =
 
 type Order = {
   _id: string;
+  orderCode?: string;
   productName: string;
   optionName: string;
   price: string;
@@ -211,6 +212,10 @@ const statusStyles: Record<OrderStatus, string> = {
     'border-emerald-200 bg-emerald-50 text-emerald-700',
   cancelled: 'border-rose-200 bg-rose-50 text-rose-700',
 };
+
+const getOrderCode = (order: Order) =>
+  order.orderCode?.trim() ||
+  `AQ-${order._id.slice(-8).toUpperCase()}`;
 
 const accentStyles: Record<
   Filter['accent'],
@@ -549,6 +554,17 @@ export default function AdminPage() {
           ? error.message
           : 'Шинэчилж чадсангүй.'
       );
+    }
+  };
+
+  const copyOrderCode = async (order: Order) => {
+    const code = getOrderCode(order);
+
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success(`${code} кодыг хууллаа.`);
+    } catch {
+      toast.error('Кодыг хуулж чадсангүй.');
     }
   };
 
@@ -1119,11 +1135,14 @@ export default function AdminPage() {
 
                 <div className="overflow-hidden rounded-[24px] border border-slate-200/70 bg-white shadow-sm">
                   <div className="overflow-x-auto">
-                    <table className="w-full min-w-[900px] text-left text-sm">
+                    <table className="w-full min-w-[1050px] text-left text-sm">
                       <thead className="bg-slate-950 text-white">
                         <tr>
                           <th className="px-5 py-4">
                             Огноо
+                          </th>
+                          <th className="px-5 py-4">
+                            Захиалгын код
                           </th>
                           <th className="px-5 py-4">
                             Бүтээгдэхүүн
@@ -1153,6 +1172,17 @@ export default function AdminPage() {
                               {new Date(
                                 order.createdAt
                               ).toLocaleString('mn-MN')}
+                            </td>
+
+                            <td className="whitespace-nowrap px-5 py-4">
+                              <button
+                                type="button"
+                                onClick={() => copyOrderCode(order)}
+                                title="Кодыг хуулах"
+                                className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 font-black tracking-wide text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
+                              >
+                                {getOrderCode(order)}
+                              </button>
                             </td>
 
                             <td className="px-5 py-4">
@@ -1228,7 +1258,7 @@ export default function AdminPage() {
                         {orders.length === 0 && (
                           <tr>
                             <td
-                              colSpan={6}
+                              colSpan={7}
                               className="p-14 text-center text-slate-400"
                             >
                               Одоогоор захиалга ирээгүй байна.
