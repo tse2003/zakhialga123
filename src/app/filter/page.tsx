@@ -104,9 +104,16 @@ export default function FilterPage() {
   const [selectedFilter, setSelectedFilter] =
     useState<FilterType | null>(null);
 
+  const [quantity, setQuantity] = useState(1);
   const [utas, setUtas] = useState('');
   const [khayg, setKhayg] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const getPriceNumber = (price: string) =>
+    Number(price.replace(/[^0-9]/g, '')) || 0;
+
+  const formatPrice = (price: number) =>
+    `${price.toLocaleString('mn-MN')}₮`;
 
   useEffect(() => {
     fetch('/api/filters')
@@ -119,6 +126,7 @@ export default function FilterPage() {
 
   const openOrder = (filter: FilterType) => {
     setSelectedFilter(filter);
+    setQuantity(1);
     setUtas('');
     setKhayg('');
   };
@@ -127,6 +135,7 @@ export default function FilterPage() {
     if (loading) return;
 
     setSelectedFilter(null);
+    setQuantity(1);
     setUtas('');
     setKhayg('');
   };
@@ -143,6 +152,7 @@ export default function FilterPage() {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !loading) {
         setSelectedFilter(null);
+        setQuantity(1);
         setUtas('');
         setKhayg('');
       }
@@ -164,6 +174,8 @@ export default function FilterPage() {
 
     const cleanUtas = utas.trim();
     const cleanKhayg = khayg.trim();
+    const unitPrice = getPriceNumber(selectedFilter.price);
+    const totalPrice = formatPrice(unitPrice * quantity);
 
     if (!cleanUtas || !cleanKhayg) {
       toast.error('Утас болон хүргэлтийн хаягаа оруулна уу.');
@@ -182,9 +194,12 @@ export default function FilterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          productName: `№${selectedFilter.stage} ${selectedFilter.name}`,
+          productName: `№${selectedFilter.stage} ${selectedFilter.name} × ${quantity} ширхэг`,
           optionName: selectedFilter.englishName,
-          price: selectedFilter.price,
+          price: totalPrice,
+          unitPrice: selectedFilter.price,
+          quantity,
+          totalPrice,
           phone: cleanUtas,
           address: cleanKhayg,
         }),
@@ -203,6 +218,7 @@ export default function FilterPage() {
       );
 
       setSelectedFilter(null);
+      setQuantity(1);
       setUtas('');
       setKhayg('');
     } catch (error) {
@@ -436,6 +452,56 @@ export default function FilterPage() {
               </div>
 
               <form onSubmit={handleOrder} className="space-y-5">
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">
+                    Тоо ширхэг
+                  </label>
+
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setQuantity((current) => Math.max(1, current - 1))
+                      }
+                      disabled={loading || quantity <= 1}
+                      aria-label="Тоо ширхэг хасах"
+                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-2xl font-black text-slate-700 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      −
+                    </button>
+
+                    <div className="text-center">
+                      <p className="text-2xl font-black text-slate-900">
+                        {quantity}
+                      </p>
+                      <p className="text-xs font-semibold text-slate-500">
+                        ширхэг
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((current) => current + 1)}
+                      disabled={loading}
+                      aria-label="Тоо ширхэг нэмэх"
+                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-600 text-2xl font-black text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between rounded-2xl bg-sky-50 px-4 py-3">
+                    <span className="text-sm font-bold text-slate-600">
+                      Нийт үнэ
+                    </span>
+                    <span className="text-xl font-black text-sky-700">
+                      {formatPrice(
+                        getPriceNumber(selectedFilter.price) * quantity
+                      )}
+                    </span>
+                  </div>
+                </div>
+
                 <div>
                   <label
                     htmlFor="utas"
