@@ -97,6 +97,11 @@ type Settings = {
 
 type Tab = 'products' | 'filters' | 'orders' | 'settings';
 
+type DeleteTarget = {
+  type: 'products' | 'filters' | 'orders';
+  id: string;
+};
+
 /* =========================
    DEFAULT DATA
 ========================= */
@@ -262,6 +267,10 @@ export default function AdminPage() {
   const [filterForm, setFilterForm] =
     useState<Filter | null>(null);
 
+  const [deleteTarget, setDeleteTarget] =
+    useState<DeleteTarget | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   const newOrderCount = useMemo(
     () =>
       orders.filter((order) => order.status === 'new').length,
@@ -322,6 +331,26 @@ export default function AdminPage() {
         setChecking(false);
       });
   }, [loadData]);
+
+  useEffect(() => {
+    if (!deleteTarget) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !deleting) {
+        setDeleteTarget(null);
+      }
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [deleteTarget, deleting]);
 
   const login = async (event: FormEvent) => {
     event.preventDefault();
@@ -451,30 +480,49 @@ export default function AdminPage() {
     }
   };
 
-  const deleteItem = async (
-    type: 'products' | 'filters',
+  const deleteItem = (
+    type: 'products' | 'filters' | 'orders',
     id?: string
   ) => {
-    if (
-      !id ||
-      !window.confirm('Энэ мэдээллийг бүр мөсөн устгах уу?')
-    ) {
-      return;
-    }
+    if (!id) return;
+
+    setDeleteTarget({ type, id });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget || deleting) return;
+
+    const { type, id } = deleteTarget;
+    setDeleting(true);
 
     try {
       await jsonRequest(`/api/admin/${type}/${id}`, {
         method: 'DELETE',
       });
 
-      toast.success('Амжилттай устгалаа.');
-      await loadData();
+      if (type === 'orders') {
+        setOrders((currentOrders) =>
+          currentOrders.filter((order) => order._id !== id)
+        );
+      } else {
+        await loadData();
+      }
+
+      toast.success(
+        type === 'orders'
+          ? 'Захиалга амжилттай устгагдлаа.'
+          : 'Амжилттай устгалаа.'
+      );
+
+      setDeleteTarget(null);
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
           : 'Устгаж чадсангүй.'
       );
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -1089,6 +1137,9 @@ export default function AdminPage() {
                           <th className="px-5 py-4">
                             Төлөв
                           </th>
+                          <th className="px-5 py-4 text-center">
+                            Үйлдэл
+                          </th>
                         </tr>
                       </thead>
 
@@ -1154,13 +1205,30 @@ export default function AdminPage() {
                                 )}
                               </select>
                             </td>
+
+                            <td className="px-5 py-4 text-center">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  deleteItem(
+                                    'orders',
+                                    order._id
+                                  )
+                                }
+                                className={dangerButton}
+                                title="Захиалга устгах"
+                                aria-label={`${order.productName} захиалгыг устгах`}
+                              >
+                                <FaTrash />
+                              </button>
+                            </td>
                           </tr>
                         ))}
 
                         {orders.length === 0 && (
                           <tr>
                             <td
-                              colSpan={5}
+                              colSpan={6}
                               className="p-14 text-center text-slate-400"
                             >
                               Одоогоор захиалга ирээгүй байна.
@@ -1856,6 +1924,72 @@ export default function AdminPage() {
             />
           </form>
         </Modal>
+      )}
+
+      {/* Custom delete confirmation modal */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-dialog-title"
+          onMouseDown={() => {
+            if (!deleting) setDeleteTarget(null);
+          }}
+        >
+          <div
+            className="w-full max-w-md overflow-hidden rounded-[28px] border border-white/60 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.35)]"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="p-6 text-center sm:p-8">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-2xl text-rose-600 shadow-inner">
+                <FaTrash />
+              </div>
+
+              <h2
+                id="delete-dialog-title"
+                className="mt-5 text-2xl font-black text-slate-900"
+              >
+                {deleteTarget.type === 'orders'
+                  ? 'Захиалга устгах уу?'
+                  : deleteTarget.type === 'products'
+                    ? 'Бүтээгдэхүүн устгах уу?'
+                    : 'Фильтер устгах уу?'}
+              </h2>
+
+              <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-500">
+                Энэ мэдээлэл бүр мөсөн устах бөгөөд дараа нь
+                сэргээх боломжгүй.
+              </p>
+
+              <div className="mt-7 grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleting}
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Болих
+                </button>
+
+                <button
+                  type="button"
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 to-red-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5 hover:from-rose-600 hover:to-red-700 hover:shadow-xl active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {deleting ? (
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  ) : (
+                    <FaTrash />
+                  )}
+
+                  {deleting ? 'Устгаж байна...' : 'Тийм, устгах'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
