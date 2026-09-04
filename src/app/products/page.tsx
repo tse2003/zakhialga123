@@ -10,7 +10,6 @@ import {
   FaChevronRight,
   FaChild,
   FaFire,
-  FaGift,
   FaLeaf,
   FaShieldAlt,
   FaSnowflake,

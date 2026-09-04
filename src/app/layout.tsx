@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
 
         <Toaster
-          position="top-right"
+          position="top-center"
           toastOptions={{
             duration: 4000,
             style: {
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               borderRadius: "12px",
               fontSize: "14px",
               fontFamily: "var(--font-geist-sans)",
-              fontWeight: 400,
+              fontWeight: 600,
             },
             success: {
               icon: "✅",

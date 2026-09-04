@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Төгс Цэнгэг Ус — захиалгын систем
 
-## Getting Started
+AQUABLUE болон WINIX ус цэвэршүүлэгч, шүүлтүүрийн мэдээлэл, захиалга болон удирдлагын самбарыг нэг дор ажиллуулах Next.js төсөл.
 
-First, run the development server:
+## Үндсэн боломжууд
+
+- Бүтээгдэхүүн, үнийн сонголт болон шүүлтүүрийн каталог
+- Утас, хүргэлтийн хаягтай захиалгын форм
+- MongoDB-д захиалга хадгалах, Gmail-ээр мэдэгдэл илгээх
+- Бүтээгдэхүүн, шүүлтүүр, захиалга, сайтын тохиргооны admin panel
+- Захиалгын төлөв болон захиалгын код
+
+## Локал орчинд ажиллуулах
+
+Node.js 20 эсвэл түүнээс шинэ хувилбар ашиглана.
 
 ```bash
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Дараа нь [http://localhost:3000](http://localhost:3000) хаягаар нээнэ. Admin panel: [http://localhost:3000/admin](http://localhost:3000/admin).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Орчны хувьсагч
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env.local` файлд дараах утгуудыг тохируулна:
 
-## Learn More
+```dotenv
+MONGODB_URI=mongodb+srv://...
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=...
+AUTH_SECRET=...
+EMAIL_USER=...
+EMAIL_PASS=...
+```
 
-To learn more about Next.js, take a look at the following resources:
+- `ADMIN_PASSWORD`-д урт, давтагдашгүй нууц үг ашиглана.
+- `AUTH_SECRET`-д санамсаргүй урт утга ашиглана.
+- Gmail ашиглах бол энгийн нууц үг биш App Password тохируулна.
+- Бодит нууц мэдээллийг GitHub-д commit хийж болохгүй.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Шалгалтын командууд
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run check
+```
 
-## Deploy on Vercel
+`npm run check` нь lint, production build болон TypeScript-ийг дарааллаар шалгана.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Байршуулах
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Төсөл нь API route, MongoDB болон Nodemailer ашигладаг тул Node.js сервер эсвэл serverless functions дэмждэг hosting шаардлагатай. Зөвхөн статик GitHub Pages дээр backend хэсэг ажиллахгүй.
+
+Production hosting дээр `.env.local` файл хуулахын оронд дээрх хувьсагчдыг тухайн hosting-ийн Environment Variables/Secrets хэсэгт тохируулна.

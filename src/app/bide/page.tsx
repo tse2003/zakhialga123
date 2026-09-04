@@ -1,9 +1,7 @@
-'use client'
-import React from 'react';
-import { FaGift } from 'react-icons/fa';
+import Image from 'next/image';
 
-const bidePage = () => {
-  const image = './bide.jpg'; // ✅ Only one image
+const BidePage = () => {
+  const image = '/bide.jpg';
 
   return (
     <div className="py-10">
@@ -11,10 +9,12 @@ const bidePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Left side: Single Image */}
           <div className="w-full">
-            <img
+            <Image
               src={image}
-              alt="Product"
-              className="w-full h-full "
+              alt="DS-800 бидэ суултуур"
+              width={794}
+              height={609}
+              className="h-auto w-full object-contain"
             />
           </div>
 
@@ -38,11 +38,6 @@ const bidePage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* <div className="bg-white p-6 rounded-lg shadow-lg">
-                <p className="text-2xl font-bold flex items-center gap-2">
-                  <FaGift size={28} /> БЭЛЭГ
-                </p>
-              </div> */}
               <div className="bg-white p-6 rounded-lg shadow-lg">
                 <h3 className="text-xl font-bold">ҮНЭ:</h3>
                 <p className="text-lg font-semibold">
@@ -58,4 +53,4 @@ const bidePage = () => {
   );
 };
 
-export default bidePage;
+export default BidePage;

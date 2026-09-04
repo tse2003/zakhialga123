@@ -6,13 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run build && npm run typecheck"
   },
   "dependencies": {
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "eslint-config-next": "^15.5.24",
     "mongodb": "^6.16.0",
     "mongoose": "^8.14.1",
     "next": "^15.5.24",
@@ -23,12 +24,15 @@
     "react-icons": "^5.5.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "daisyui": "^5.0.30",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^15.5.24",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
