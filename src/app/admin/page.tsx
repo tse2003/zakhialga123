@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import {
   FaBoxOpen,
   FaCheck,
@@ -620,8 +620,6 @@ export default function AdminPage() {
   if (!authenticated) {
     return (
       <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-sky-950 to-blue-950 p-4">
-        <Toaster position="top-center" />
-
         <div className="pointer-events-none absolute -left-40 top-0 h-96 w-96 rounded-full bg-sky-500/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
 
@@ -732,17 +730,6 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-slate-100">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: {
-            borderRadius: '14px',
-            padding: '14px 18px',
-            fontWeight: 600,
-          },
-        }}
-      />
-
       {/* Top header */}
       <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/95 text-white shadow-xl backdrop-blur-xl">
         <div className="mx-auto flex min-h-[76px] max-w-[1500px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">

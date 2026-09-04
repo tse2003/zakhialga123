@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 type PriceOption = {
   id: string;
@@ -355,18 +355,6 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-white to-cyan-50">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3500,
-          style: {
-            borderRadius: '14px',
-            padding: '14px 18px',
-            fontWeight: 600,
-          },
-        }}
-      />
-
       {/* Background */}
       <div className="pointer-events-none absolute -left-32 top-16 h-72 w-72 rounded-full bg-cyan-200/30 blur-3xl" />
       <div className="pointer-events-none absolute -right-32 top-72 h-96 w-96 rounded-full bg-blue-200/30 blur-3xl" />
