@@ -14,6 +14,7 @@ import {
   FaClipboardList,
   FaDroplet,
   FaGear,
+  FaHouse,
   FaPen,
   FaPlus,
   FaRightFromBracket,
@@ -801,6 +802,16 @@ export default function AdminPage() {
           {/* Navigation */}
           <aside className="min-w-0">
             <nav className="flex gap-2 overflow-x-auto rounded-2xl bg-white p-2 shadow-sm lg:sticky lg:top-[100px] lg:flex-col lg:overflow-visible">
+              <a
+                href="/admin/customers"
+                className="flex min-w-max items-center justify-between gap-4 rounded-xl bg-emerald-50 px-4 py-3.5 text-left text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 lg:w-full"
+              >
+                <span className="flex items-center gap-3">
+                  <FaHouse className="shrink-0" />
+                  Айл ба фильтерийн хяналт
+                </span>
+              </a>
+
               {tabs.map((item) => {
                 const Icon = item.icon;
                 const active = tab === item.id;
