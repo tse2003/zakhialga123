@@ -109,5 +109,5 @@ export const defaultSettings = {
   homeSubtitle: 'Өөрт тохирох бүтээгдэхүүн болон үнийн багцаа сонгоорой.',
   phoneNumbers: ['7676-7576', '9007-7576', '9176-7576'],
   facebookUrl: 'https://www.facebook.com/ustsewershuulegch/',
-  orderEmail: 'naagii0329@gmail.com',
+  orderEmail: 'aagii@gmail.com',
 };
