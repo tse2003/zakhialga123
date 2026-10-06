@@ -5,6 +5,9 @@ import Order from '@/models/Order';
 import SiteSettings from '@/models/SiteSettings';
 
 type NewOrder = {
+  requestKey?: string;
+  accountId?: string;
+  amount?: number;
   productName: string;
   optionName?: string;
   price?: string;
