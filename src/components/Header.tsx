@@ -14,6 +14,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 const menuItems = [
+  {name: 'Миний бүртгэл', href: '/account'},
   {
     name: 'Захиалга өгөх',
     href: '/',

@@ -230,6 +230,7 @@ export default function FilterPage() {
           'x-idempotency-key': requestKeyRef.current,
         },
         body: JSON.stringify({
+          filterId: selectedFilter._id,
           productName: `№${selectedFilter.stage} ${selectedFilter.name} × ${quantity} ширхэг`,
           optionName: selectedFilter.englishName,
           price: totalPrice,
@@ -249,6 +250,7 @@ export default function FilterPage() {
         );
       }
 
+      window.location.assign(`/account?order=${encodeURIComponent(String(result.orderId))}`);
       const orderId = String(
         result.order?.orderId ?? result.orderId ?? ''
       );

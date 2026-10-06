@@ -263,6 +263,7 @@ export default function Home() {
         );
       }
 
+      window.location.assign(`/account?order=${encodeURIComponent(String(result.orderId))}`);
       const orderId = String(
         result.order?.orderId ?? result.orderId ?? ''
       );

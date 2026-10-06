@@ -75,6 +75,7 @@ type OrderStatus =
   | 'cancelled';
 
 type Order = {
+  paymentStatus?: string;
   _id: string;
   orderCode?: string;
   productName: string;
@@ -1190,6 +1191,7 @@ export default function AdminPage() {
 
                               <span className="mt-1 block text-slate-500">
                                 {order.optionName}
+                                <span className="block font-bold">{order.paymentStatus === 'paid' ? 'Төлбөр баталгаажсан' : order.paymentStatus === 'pending' ? 'Төлбөр хүлээгдэж байна' : 'Өмнөх захиалга'}</span>
 
                                 {order.price &&
                                   ` • ${order.price}`}
