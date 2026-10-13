@@ -1,5 +1,6 @@
 'use client';
 
+import PaymentDialog from "@/components/PaymentDialog";
 import Image from 'next/image';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -119,6 +120,7 @@ export default function FilterPage() {
   const [utas, setUtas] = useState('');
   const [khayg, setKhayg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [paymentOrderId, setPaymentOrderId] = useState<string | null>(null);
   const [completedOrder, setCompletedOrder] =
     useState<OrderReceipt | null>(null);
   const requestKeyRef = useRef('');
@@ -250,35 +252,10 @@ export default function FilterPage() {
         );
       }
 
-      window.location.assign(`/account?order=${encodeURIComponent(String(result.orderId))}`);
-      const orderId = String(
-        result.order?.orderId ?? result.orderId ?? ''
-      );
-      const fallbackCode = orderId
-        ? `AQ-${orderId.slice(-8).toUpperCase()}`
-        : `AQ-${Date.now().toString().slice(-8)}`;
-
-      setCompletedOrder({
-        orderCode: String(
-          result.order?.orderCode ?? result.orderCode ?? fallbackCode
-        ),
-        productName: `№${selectedFilter.stage} ${selectedFilter.name}`,
-        optionName: selectedFilter.englishName,
-        unitPrice: selectedFilter.price,
-        quantity,
-        totalPrice,
-        phone: cleanUtas,
-        address: cleanKhayg,
-      });
-
-      toast.success(
-        result.message || 'Таны захиалга амжилттай бүртгэгдлээ.'
-      );
-
+      const orderId = String(result.orderId ?? '');
+      if (!orderId) throw new Error('Захиалгын дугаар ирсэнгүй. Миний бүртгэл хэсгээс шалгана уу.');
       setSelectedFilter(null);
-      setQuantity(1);
-      setUtas('');
-      setKhayg('');
+      setPaymentOrderId(orderId);
       requestKeyRef.current = '';
     } catch (error) {
       console.error('Захиалгын алдаа:', error);
@@ -670,6 +647,8 @@ export default function FilterPage() {
       )}
 
       {/* Free order confirmation */}
+      {paymentOrderId && <PaymentDialog key={paymentOrderId} orderId={paymentOrderId} onClose={() => setPaymentOrderId(null)} />}
+
       {completedOrder && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-slate-950/70 p-4 backdrop-blur-md"
