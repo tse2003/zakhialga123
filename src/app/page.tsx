@@ -43,20 +43,6 @@ type OrderReceipt = {
 const fallbackProducts: Product[] = [
   {
     id: 1,
-    name: 'WINIX TS-200s',
-    image: '/ts200s.png',
-    badge: 'ХЯМДРАЛ',
-    options: [
-      {
-        id: 'winix-ts200s',
-        name: 'WINIX TS-200s',
-        oldPrice: '1.250.000₮',
-        price: '1.080.000₮',
-      },
-    ],
-  },
-  {
-    id: 2,
     name: 'Цорготой ус цэвэршүүлэгч',
     image: '/us.png',
     badge: '2 СОНГОЛТТОЙ',
@@ -88,6 +74,20 @@ const fallbackProducts: Product[] = [
           'Холбох хэрэгсэл',
           'Хүргэлт, суурилуулалт үнэгүй',
         ],
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: 'WINIX TS-200s',
+    image: '/ts200s.png',
+    badge: 'ХЯМДРАЛ',
+    options: [
+      {
+        id: 'winix-ts200s',
+        name: 'WINIX TS-200s',
+        oldPrice: '1.250.000₮',
+        price: '1.080.000₮',
       },
     ],
   },
