@@ -1,5 +1,6 @@
 'use client';
 
+import PaymentDialog from "@/components/PaymentDialog";
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -119,6 +120,7 @@ export default function Home() {
   const [utas, setUtas] = useState('');
   const [khayg, setKhayg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentOrderId, setPaymentOrderId] = useState<string | null>(null);
   const [completedOrder, setCompletedOrder] =
     useState<OrderReceipt | null>(null);
   const requestKeyRef = useRef('');
@@ -263,39 +265,10 @@ export default function Home() {
         );
       }
 
-      window.location.assign(`/account?order=${encodeURIComponent(String(result.orderId))}`);
-      const orderId = String(
-        result.order?.orderId ?? result.orderId ?? ''
-      );
-      const fallbackCode = orderId
-        ? `AQ-${orderId.slice(-8).toUpperCase()}`
-        : `AQ-${Date.now().toString().slice(-8)}`;
-
-      setCompletedOrder({
-        orderCode: String(
-          result.order?.orderCode ?? result.orderCode ?? fallbackCode
-        ),
-        orderId: orderId || undefined,
-        productName: String(
-          result.order?.productName ?? selectedProduct.name
-        ),
-        optionName: String(
-          result.order?.optionName ?? selectedOption.name
-        ),
-        price: String(result.order?.price ?? selectedOption.price),
-        phone: normalizedPhone,
-        address: khayg.trim(),
-        createdAt: String(
-          result.order?.createdAt ?? new Date().toISOString()
-        ),
-      });
-
-      toast.success('Захиалга амжилттай бүртгэгдлээ!');
-
+      const orderId = String(result.orderId ?? '');
+      if (!orderId) throw new Error('Захиалгын дугаар ирсэнгүй. Миний бүртгэл хэсгээс шалгана уу.');
       setOpenDialogId(null);
-      setSelectedOptionId('');
-      setUtas('');
-      setKhayg('');
+      setPaymentOrderId(orderId);
       requestKeyRef.current = '';
     } catch (error) {
       console.error('Order error:', error);
@@ -716,6 +689,8 @@ export default function Home() {
       )}
 
       {/* Free order confirmation */}
+      {paymentOrderId && <PaymentDialog key={paymentOrderId} orderId={paymentOrderId} onClose={() => setPaymentOrderId(null)} />}
+
       {completedOrder && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-slate-950/70 p-4 backdrop-blur-md"
